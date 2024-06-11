@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        #coordinates {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Location Tracker</h1>
+    <div id="map"></div>
+    <div id="coordinates">Current Coordinates: Latitude: N/A, Longitude: N/A</div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script>
+        // Initialize Pusher
+        Pusher.logToConsole = true;
+        const pusher = new Pusher('Your Key', {
+            cluster: 'Your Clusters'
+        });
+
+        const channel = pusher.subscribe('location-channel');
+        channel.bind('location-update', function (data) {
+            updateMap(data.latitude, data.longitude);
+        });
+
+        // Initialize the map
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        const marker = L.marker([0, 0]).addTo(map);
+
+        function updateMap(lat, lng) {
+            const location = [lat, lng];
+            marker.setLatLng(location);
+            map.setView(location, 13);
+            document.getElementById('coordinates').innerText = `Current Coordinates: Latitude: ${lat}, Longitude: ${lng}`;
+        }
+    </script>
+</body>
+</html>
